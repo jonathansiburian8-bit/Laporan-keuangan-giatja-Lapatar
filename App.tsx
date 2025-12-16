@@ -6,21 +6,49 @@ import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { FinancialCharts } from './components/FinancialCharts';
 import { AIAdvisor } from './components/AIAdvisor';
-import { LayoutDashboard } from 'lucide-react';
+import { LoginForm } from './components/LoginForm';
+import { LayoutDashboard, LogOut } from 'lucide-react';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  // Check session storage on load
+  useEffect(() => {
+    const sessionAuth = sessionStorage.getItem('giatja_auth');
+    if (sessionAuth === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // Load initial data
   useEffect(() => {
-    const loaded = getStoredTransactions();
-    setTransactions(loaded);
-  }, []);
+    if (isAuthenticated) {
+      const loaded = getStoredTransactions();
+      setTransactions(loaded);
+    }
+  }, [isAuthenticated]);
 
   // Save data on change
   useEffect(() => {
-    saveStoredTransactions(transactions);
-  }, [transactions]);
+    if (isAuthenticated) {
+      saveStoredTransactions(transactions);
+    }
+  }, [transactions, isAuthenticated]);
+
+  const handleLogin = (u: string, p: string): boolean => {
+    if (u === 'Giatjakitabisa' && p === 'akupadamu888') {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('giatja_auth', 'true');
+      return true;
+    }
+    return false;
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('giatja_auth');
+  };
 
   const handleAddTransaction = (newTx: Omit<Transaction, 'id'>) => {
     const transaction: Transaction = {
@@ -34,6 +62,10 @@ function App() {
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen pb-12">
       {/* Header */}
@@ -45,8 +77,17 @@ function App() {
             </div>
             <h1 className="text-xl font-bold text-slate-800 tracking-tight">Laporan Keuangan Giatja</h1>
           </div>
-          <div className="text-sm text-slate-500">
-            Kelola Keuangan Usaha
+          <div className="flex items-center gap-4">
+            <div className="hidden md:block text-sm text-slate-500">
+              Admin Akses
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
           </div>
         </div>
       </header>

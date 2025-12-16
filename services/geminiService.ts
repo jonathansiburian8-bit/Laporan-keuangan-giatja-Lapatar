@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'FAKE_API_KEY_FOR_DEVELOPMENT' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const analyzeFinances = async (transactions: Transaction[]): Promise<string> => {
   if (transactions.length === 0) {
